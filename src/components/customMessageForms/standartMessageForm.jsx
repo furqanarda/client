@@ -1,14 +1,35 @@
 import React, { useState } from "react";
-import { PaperClipIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import {
+  PaperAirplaneIcon,
+  PaperClipIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
 import Dropzone from "react-dropzone";
 
-function StandartMessageForm(props) {
+function StandartMessageForm({ props, activeChat }) {
   const [message, setMessage] = useState("");
   const [attachment, setAttachment] = useState("");
   const [preview, setPreview] = useState("");
 
   const handleChange = (e) => setMessage(e.target.value);
 
+  const handleSubmit = async () => {
+    const date = new Date()
+      .toISOString()
+      .replace("T", " ")
+      .replace("Z", `${Math.floor(Math.random() * 1000)}+00:00`);
+    const at = attachment ? [{ blob: attachment, file: attachment.name }] : [];
+    const form = {
+      text: message,
+      attachments: at,
+      sender_username: props.userName,
+      created: date,
+      activeChatId: activeChat.id,
+    };
+    props.onSubmit(form);
+    setMessage("");
+    setAttachment("");
+  };
   return (
     <div className="message-form-container">
       {preview && (
@@ -40,10 +61,10 @@ function StandartMessageForm(props) {
         </div>
         <div className="message-form-icons">
           <Dropzone
-            acceptedFiles=".jpg,.jpeg,.png"
+            acceptedFiles=".jpg, .jpeg, .png"
             multiple={false}
             noClick={true}
-            onDrop={() => {
+            onDrop={(acceptedFiles) => {
               setAttachment(acceptedFiles[0]);
               setPreview(URL.createObjectURL(acceptedFiles[0]));
             }}
@@ -58,10 +79,17 @@ function StandartMessageForm(props) {
               </div>
             )}
           </Dropzone>
+          <hr className="vertical-line" />
+          <PaperAirplaneIcon
+            className="message-form-icon-airplane"
+            onClick={() => {
+              setPreview("");
+              handleSubmit();
+            }}
+          />
         </div>
       </div>
     </div>
   );
 }
-
 export default StandartMessageForm;
